@@ -12,6 +12,7 @@ ASSOCIATION_THRESHOLD = 3 # threshold for association
 MAX_HISTORY = 20 # maximum history of objects
 MAX_RANGE = 100 # maximum range of sensor
 OBJ_ZONE = MAX_RANGE/2 # zone of main object
+MIN_CLUSTER_SIZE = 3 # minimum cluster size for new dynamic objects
 
 # define colors
 BLACK = (0, 0, 0, 255) # walls 
@@ -209,6 +210,7 @@ class Environment:
        matched_dynamics = set()  # Keep track of matched dynamic objects
        features_to_remove = set()  # Track features that need to be removed
        
+       # First, update existing dynamic objects
        for feat_x, feat_y in observed_features:
            is_dynamic = False
            
@@ -220,9 +222,9 @@ class Environment:
                prev_pos = obj_data['positions'][-1]
                dist = np.sqrt((feat_x - prev_pos[0])**2 + (feat_y - prev_pos[1])**2)
                
-               if dist < ASSOCIATION_THRESHOLD:
-                   # Update velocity estimate
-                   dt = (current_time - obj_data['last_update']) / 1000.0  # Convert to seconds
+               # Only consider it dynamic if it has moved significantly
+               if dist < ASSOCIATION_THRESHOLD and obj_data['velocity'] > 0.5:  # Added velocity threshold
+                   dt = (current_time - obj_data['last_update']) / 1000.0
                    if dt > 0:
                        velocity = dist / dt
                        obj_data['velocity'] = 0.7 * obj_data['velocity'] + 0.3 * velocity
@@ -239,40 +241,51 @@ class Environment:
            if not is_dynamic:
                dynamic_candidates.append((feat_x, feat_y))
        
-       # TODO: check if this is correct
-       # It is removing static features as well
-       
-       # Remove dynamic objects that haven't been observed recently
+       # Only remove dynamic objects that have shown consistent movement
        current_objects = list(self.dynamic_objects.keys())
        for obj_id in current_objects:
            if obj_id not in matched_dynamics:
                time_since_last_update = current_time - self.dynamic_objects[obj_id]['last_update']
                if time_since_last_update > 5000:  # 5 seconds threshold
-                   # Mark features near the last known position for removal
-                   last_pos = self.dynamic_objects[obj_id]['positions'][-1]
-                   for feat_id, feature in self.features.items():
-                       feat_dist = np.sqrt((last_pos[0] - feature.x)**2 + 
-                                         (last_pos[1] - feature.y)**2)
-                       if feat_dist < ASSOCIATION_THRESHOLD:  
-                           features_to_remove.add(feat_id)
+                   # Only remove features if the object has shown significant movement
+                   if self.dynamic_objects[obj_id]['velocity'] > 0.5:
+                       last_pos = self.dynamic_objects[obj_id]['positions'][-1]
+                       for feat_id, feature in self.features.items():
+                           feat_dist = np.sqrt((last_pos[0] - feature.x)**2 + 
+                                             (last_pos[1] - feature.y)**2)
+                           if feat_dist < ASSOCIATION_THRESHOLD:
+                               features_to_remove.add(feat_id)
                    del self.dynamic_objects[obj_id]
-               
-       # Process remaining candidates
+       
+       # Process remaining candidates with more strict criteria for new dynamic objects
        for feat_x, feat_y in dynamic_candidates:
            # Check if this could be a new dynamic object by looking at recent feature history
            is_new_dynamic = False
            for feature in self.features.values():
                dist = np.sqrt((feat_x - feature.x)**2 + (feat_y - feature.y)**2)
-               if dist > ASSOCIATION_THRESHOLD and dist < ASSOCIATION_THRESHOLD * 2:
-                   # Potential dynamic object - create new tracking
-                   self.dynamic_objects[self.dynamic_object_counter] = {
-                       'positions': [(feat_x, feat_y)],
-                       'velocity': 0,
-                       'last_update': current_time
-                   }
-                   self.dynamic_object_counter += 1
-                   is_new_dynamic = True
-                   break
+               
+               # More strict criteria for new dynamic objects
+               if (dist > ASSOCIATION_THRESHOLD and 
+                   dist < ASSOCIATION_THRESHOLD * 2 and 
+                   len(self.features) > MIN_CLUSTER_SIZE):  # Ensure we have enough features
+                   
+                   # Check if the feature has moved consistently
+                   consistent_movement = True
+                   for other_feature in self.features.values():
+                       if np.sqrt((other_feature.x - feat_x)**2 + 
+                                (other_feature.y - feat_y)**2) < ASSOCIATION_THRESHOLD:
+                           consistent_movement = False
+                           break
+                   
+                   if consistent_movement:
+                       self.dynamic_objects[self.dynamic_object_counter] = {
+                           'positions': [(feat_x, feat_y)],
+                           'velocity': 0,
+                           'last_update': current_time
+                       }
+                       self.dynamic_object_counter += 1
+                       is_new_dynamic = True
+                       break
            
            # Uses kalman filter to update feature position
            if not is_new_dynamic:
