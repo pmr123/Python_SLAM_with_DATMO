@@ -73,7 +73,7 @@ Key parameters can be adjusted in the respective files:
 - Robot velocity: `ROBOT_VELOCITY = 10`
 - Moving object velocity: `VELOCITY = 2`
 - Number of moving objects: `NUM_MOVING_OBJECTS = 3`
-- Feature association threshold: `ASSOCIATION_THRESHOLD = 10`
+- Feature association threshold: `ASSOCIATION_THRESHOLD = 3`
 - Proximity warning threshold: `30 pixels`
 
 

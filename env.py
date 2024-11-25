@@ -8,7 +8,7 @@ from robot import Robot
 NUM_MOVING_OBJECTS = 3 # number of moving objects
 COLLISION_BUFFER = 15 # buffer zone for collision detection
 VELOCITY_MAIN_OBJECT = 5 # velocity of main object
-ASSOCIATION_THRESHOLD = 10 # threshold for association
+ASSOCIATION_THRESHOLD = 3 # threshold for association
 MAX_HISTORY = 20 # maximum history of objects
 MAX_RANGE = 100 # maximum range of sensor
 OBJ_ZONE = MAX_RANGE/2 # zone of main object
@@ -274,8 +274,7 @@ class Environment:
                    is_new_dynamic = True
                    break
            
-           # TODO: Use kalman filter
-           
+           # Uses kalman filter to update feature position
            if not is_new_dynamic:
                # Process as static feature
                associated = False
