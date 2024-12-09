@@ -3,8 +3,8 @@ import numpy as np
 # define constants
 NOISE_STD_MEAS = 0.01 # standard deviation of measurement error
 MAX_RANGE = 100 # maximum range of sensor
-DISTANCE_THRESHOLD = 10 # threshold for distance
-MIN_CLUSTER_SIZE = 5 # minimum points for feature
+DISTANCE_THRESHOLD = 5 # threshold for distance
+MIN_CLUSTER_SIZE = 3 # minimum points for feature
 
 # Class to define tof sensor
 class Sensor:

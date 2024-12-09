@@ -3,6 +3,11 @@ import numpy as np
 from features import Feature
 from movingObjects import MovingObject
 from robot import Robot
+from tts_system import TTSSystem
+
+# TODO:
+# - add graphical representation of the environment
+
 
 # define constants
 NUM_MOVING_OBJECTS = 3 # number of moving objects
@@ -68,6 +73,9 @@ class Environment:
        self.font = pygame.font.Font(None, 36)
        self.last_warning_time = 0
        self.current_warning = None
+       
+       # Add TTS system initialization
+       self.tts = TTSSystem()
        
    
    # check for collision for moving objects
@@ -198,6 +206,7 @@ class Environment:
            angle_degrees = np.degrees(min_angle) % 360
            self.current_warning = f"Warning: Obstacle at {min_distance:.1f} pixels, {angle_degrees:.1f}°"
            print(self.current_warning)  # Still print to console
+           self.tts.speak(self.current_warning)  # Add TTS output
        else:
            self.current_warning = None
    

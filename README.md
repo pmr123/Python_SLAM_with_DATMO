@@ -17,6 +17,7 @@ A Python-based simulation of Simultaneous Localization and Mapping (SLAM) with D
   - Distance to nearest obstacle
   - Angle to nearest obstacle in degrees
   - Real-time visual and text warnings
+  - Voice alerts with 5-second buffer between warnings
 - Comprehensive visualization of:
   - Robot path history
   - Raw sensor measurements
@@ -25,12 +26,14 @@ A Python-based simulation of Simultaneous Localization and Mapping (SLAM) with D
   - Sensor range boundaries
   - Object interaction zones
   - Warning messages
+- End-of-simulation feature map generation
 
 ## Requirements
 
 - Python 3.7+
 - Pygame
 - NumPy
+- pyttsx3 (for text-to-speech warnings)
 
 ## Installation
 
@@ -63,7 +66,8 @@ The simulation includes a sophisticated proximity warning system that:
 - Monitors distances to all obstacles (static and dynamic)
 - Displays warnings when obstacles are within 30 pixels
 - Shows precise distance and bearing to the nearest obstacle
-- Provides both console and on-screen visual feedback
+- Provides both visual and voice feedback
+- Maintains 5-second buffer between voice alerts
 
 ## Project Structure
 
@@ -73,6 +77,18 @@ The simulation includes a sophisticated proximity warning system that:
 - `sensor.py`: Time-of-Flight sensor simulation and feature extraction
 - `features.py`: Feature representation with Kalman filter updates
 - `movingObjects.py`: Dynamic object simulation and trajectory management
+- `tts_system.py`: Text-to-speech system for proximity warnings
+
+## Configuration
+
+Key parameters can be adjusted in the respective files:
+
+- Sensor range: `MAX_RANGE = 100`
+- Robot velocity: `ROBOT_VELOCITY = 10`
+- Moving object velocity: `VELOCITY = 2`
+- Number of moving objects: `NUM_MOVING_OBJECTS = 3`
+- Feature association threshold: `ASSOCIATION_THRESHOLD = 3`
+- Proximity warning threshold: `30 pixels`
 
 ## Key Parameters
 
@@ -95,6 +111,11 @@ The simulation includes a sophisticated proximity warning system that:
 - `MAX_HISTORY = 20`: Maximum trajectory history length
 - `NUM_MOVING_OBJECTS = 3`: Number of simulated moving objects
 
+### Warning System
+- `speak_buffer = 5`: Minimum seconds between voice warnings
+- `rate = 150`: Speech rate for warnings
+- `volume = 0.9`: Volume level for voice alerts
+
 ## Implementation Details
 
 ### Feature Management
@@ -108,17 +129,6 @@ The simulation includes a sophisticated proximity warning system that:
 - Automatic removal of stale tracks
 - Trajectory history maintenance
 
-## Contributing
 
-## Configuration
-
-Key parameters can be adjusted in the respective files:
-
-- Sensor range: `MAX_RANGE = 100`
-- Robot velocity: `ROBOT_VELOCITY = 10`
-- Moving object velocity: `VELOCITY = 2`
-- Number of moving objects: `NUM_MOVING_OBJECTS = 3`
-- Feature association threshold: `ASSOCIATION_THRESHOLD = 3`
-- Proximity warning threshold: `30 pixels`
 
 
